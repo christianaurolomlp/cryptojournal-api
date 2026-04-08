@@ -107,6 +107,22 @@ app.put('/api/trades/:id', auth, async (req, res) => {
   }
 })
 
+app.delete('/api/trades/month/:yearMonth', auth, async (req, res) => {
+  try {
+    const { yearMonth } = req.params
+    // yearMonth = "2026-01"
+    // Trades store date in data->>'date' as ISO string or "YYYY-MM-DD"
+    const result = await pool.query(
+      `DELETE FROM trades WHERE data->>'date' LIKE $1 || '%' RETURNING id`,
+      [yearMonth]
+    )
+    res.json({ ok: true, deleted: result.rowCount, month: yearMonth })
+  } catch (err) {
+    console.error('DELETE /api/trades/month error:', err)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
 app.delete('/api/trades/:id', auth, async (req, res) => {
   try {
     const { id } = req.params
